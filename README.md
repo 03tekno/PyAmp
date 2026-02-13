@@ -1,6 +1,8 @@
 # PyAmp Music Player
-Debian/Pardus için Müzik Çalar
+Python ve Qt6 ile yazılmış basit ve hafif müzik çalar uygulamadır.
 
-Download link: https://github.com/03tekno/PyAmp/releases/tag/current
+.mp3, .wav, '.ogg, .flac, .m4a, .aac, .wma, .mp4, .opus, .aiff ses formatlarını destekler.
+
+Debian Ubuntu Pardus Linuxmint tabanlı sistemler için .deb dosyası download link: https://github.com/03tekno/PyAmp/releases/tag/current
 
 ![screenshot](resim.png "screenshot")

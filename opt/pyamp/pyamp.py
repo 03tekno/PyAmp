@@ -8,6 +8,9 @@ from PyQt6.QtGui import QPainter, QColor, QPen, QAction, QFont
 
 SETTINGS_FILE = os.path.expanduser("~/.pyamp_settings.json")
 
+# Desteklenen genişletilmiş format listesi
+SUPPORTED_FORMATS = ('.mp3', '.wav', '.ogg', '.flac', '.m4a', '.aac', '.wma', '.mp4', '.opus', '.aiff')
+
 class EnhancedList(QListWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -27,9 +30,8 @@ class EnhancedList(QListWidget):
     def dragMoveEvent(self, event): (event.accept() if event.mimeData().hasUrls() else event.ignore())
     def dropEvent(self, event):
         files = [u.toLocalFile() for u in event.mimeData().urls()]
-        valid = ('.mp3', '.wav', '.ogg', '.flac', '.m4a', '.aac')
         for f in files:
-            if f.lower().endswith(valid): self.window().add_file_to_list(f)
+            if f.lower().endswith(SUPPORTED_FORMATS): self.window().add_file_to_list(f)
 
 class VisualizerWidget(QWidget):
     def __init__(self, parent=None):
@@ -86,9 +88,8 @@ class PyAmp(QMainWindow):
         self.time_label = QLabel("00:00 / 00:00"); self.time_label.setObjectName("time_display"); self.time_label.setAlignment(Qt.AlignmentFlag.AlignRight)
         scr_lay.addWidget(self.info_screen); scr_lay.addWidget(self.time_label)
         
-        # SES KONTROL ALANI (Kısaltıldı)
         vol_lay = QVBoxLayout()
-        vol_lay.setSpacing(2) # Etiket ve çubuk arası mesafe daraltıldı
+        vol_lay.setSpacing(2)
         
         self.vol_perc_lbl = QLabel("70%")
         self.vol_perc_lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
@@ -101,10 +102,10 @@ class PyAmp(QMainWindow):
         self.volume_slider.setFixedHeight(90)
         self.volume_slider.valueChanged.connect(self.set_volume)
         
-        vol_lay.addStretch() # Üstten boşluk vererek ortaladık
+        vol_lay.addStretch()
         vol_lay.addWidget(self.vol_perc_lbl, alignment=Qt.AlignmentFlag.AlignHCenter)
         vol_lay.addWidget(self.volume_slider, alignment=Qt.AlignmentFlag.AlignHCenter)
-        vol_lay.addStretch() # Alttan boşluk
+        vol_lay.addStretch()
         
         main_screen_lay.addWidget(scr_f, stretch=5); main_screen_lay.addLayout(vol_lay, stretch=1); layout.addLayout(main_screen_lay)
         
@@ -139,27 +140,16 @@ class PyAmp(QMainWindow):
         self.setStyleSheet(f"""
             QMainWindow {{ background-color: #121214; }}
             QWidget {{ font-family: 'Segoe UI', sans-serif; }}
-            
             #screen_container {{ background-color: #1E1E22; border-radius: 15px; padding: 15px; border: 1px solid #2A2A2E; }}
             QLabel#screen {{ color: white; font-size: 14px; font-weight: 500; }}
             QLabel#time_display {{ color: {color}; font-size: 12px; font-family: 'Consolas'; }}
-            
-            QLabel#vol_label {{ 
-                color: {color}; 
-                font-size: 12px; 
-                font-weight: bold; 
-            }}
-            
+            QLabel#vol_label {{ color: {color}; font-size: 12px; font-weight: bold; }}
             QPushButton {{ background-color: #252529; color: white; border: none; border-radius: 10px; padding: 5px; }}
             QPushButton:hover {{ background-color: #323238; border: 1px solid {color}; }}
-            
-            #playlist {{ 
-                background-color: #18181B; color: {color}; border-radius: 12px; border: none; padding: 5px; outline: none; font-size: 13px;
-            }}
+            #playlist {{ background-color: #18181B; color: {color}; border-radius: 12px; border: none; padding: 5px; outline: none; font-size: 13px; }}
             #playlist::item {{ padding: 12px; border-radius: 8px; margin: 2px; background-color: transparent; }}
             #playlist::item:selected {{ background-color: transparent; color: {color}; font-weight: bold; border-left: 4px solid {color}; }}
             #playlist::item:hover {{ background-color: #252529; }}
-            
             QSlider::groove:horizontal {{ background: #252529; height: 6px; border-radius: 3px; }}
             QSlider::handle:horizontal {{ background: {color}; width: 14px; height: 14px; margin: -4px 0; border-radius: 7px; }}
             QSlider::groove:vertical {{ background: #252529; width: 6px; border-radius: 3px; }}
@@ -168,11 +158,7 @@ class PyAmp(QMainWindow):
 
     def show_theme_menu(self):
         menu = QMenu(self)
-        themes = {
-            "Modern Turkuaz": "#00FF88", "Royal Blue": "#4D96FF", "Vivid Purple": "#B166CC",
-            "Sunset Orange": "#FF6B6B", "Electric Gold": "#FFD93D", "Rose Pink": "#FF8AAE",
-            "Buz Beyazı": "#F7F7F7", "Minimal Gri": "#8E8E93"
-        }
+        themes = {"Modern Turkuaz": "#00FF88", "Royal Blue": "#4D96FF", "Vivid Purple": "#B166CC", "Sunset Orange": "#FF6B6B", "Electric Gold": "#FFD93D", "Rose Pink": "#FF8AAE", "Buz Beyazı": "#F7F7F7", "Minimal Gri": "#8E8E93"}
         for name, hex_code in themes.items():
             action = QAction(name, self); action.triggered.connect(lambda checked, h=hex_code: self.apply_styles(h)); menu.addAction(action)
         menu.exec(self.btn_theme.mapToGlobal(self.btn_theme.rect().bottomLeft()))
@@ -183,11 +169,15 @@ class PyAmp(QMainWindow):
         
     def toggle_shuffle(self): self.is_shuffle = not self.is_shuffle; self.btn_shuffle.setStyleSheet(f"color: {self.current_theme_hex if self.is_shuffle else 'white'};")
     def toggle_repeat(self): self.is_repeat = not self.is_repeat; self.btn_repeat.setStyleSheet(f"color: {self.current_theme_hex if self.is_repeat else 'white'};")
+    
     def status_manager(self, s):
         if s == QMediaPlayer.MediaStatus.EndOfMedia:
             if self.is_repeat: self.play_sel()
-            elif self.is_shuffle: r = random.randint(0, self.list.count()-1); self.list.setCurrentRow(r); self.play_sel()
+            elif self.is_shuffle: 
+                r = random.randint(0, self.list.count()-1)
+                self.list.setCurrentRow(r); self.play_sel()
             else: self.next_m()
+            
     def format_time(self, ms): return QTime(0, 0).addMSecs(ms).toString("mm:ss")
     def update_slider(self, p): self.prog_slider.setValue(p); self.time_label.setText(f"{self.format_time(p)} / {self.format_time(self.total_time_ms)}")
     def update_duration(self, d): self.prog_slider.setRange(0, d); self.total_time_ms = d
@@ -214,9 +204,13 @@ class PyAmp(QMainWindow):
     def closeEvent(self, e): self.save_settings(); e.accept()
     def add_file_to_list(self, p):
         if p not in self.playlist_files: self.playlist_files.append(p); self.list.addItem(os.path.basename(p))
+    
     def open_f(self):
-        f, _ = QFileDialog.getOpenFileNames(self, "Müzik Seç", "", "Ses Dosyaları (*.mp3 *.wav *.flac)")
+        # Filtreleme kısmına m4a, aac ve diğerleri eklendi
+        filter_str = "Ses Dosyaları (" + " ".join(["*" + ext for ext in SUPPORTED_FORMATS]) + ");;Tüm Dosyalar (*)"
+        f, _ = QFileDialog.getOpenFileNames(self, "Müzik Seç", "", filter_str)
         for p in f: self.add_file_to_list(p)
+        
     def play_sel(self):
         r = self.list.currentRow()
         if 0 <= r < len(self.playlist_files):

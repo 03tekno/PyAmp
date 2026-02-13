@@ -112,7 +112,7 @@ class PyAmp(QMainWindow):
 
         # --- ÜST BAŞLIK ---
         header_layout = QHBoxLayout()
-        title_label = QLabel("PYAMP Music Player")
+        title_label = QLabel("PyAmp Music Player")
         title_label.setStyleSheet("color: #0f0; font-weight: bold; font-size: 10px;")
         btn_about = QPushButton("INFO ℹ")
         btn_about.setFixedSize(50, 20)
@@ -123,7 +123,7 @@ class PyAmp(QMainWindow):
         header_layout.addWidget(btn_about)
         layout.addLayout(header_layout)
 
-        # --- LCD SCREEN (Yükseklik artırıldı, yarım çıkma sorunu giderildi) ---
+        # --- LCD SCREEN ---
         screen_frame = QFrame()
         screen_frame.setObjectName("screen_container")
         screen_frame.setFixedHeight(100) # Yükseklik sabitlendi

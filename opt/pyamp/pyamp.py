@@ -112,7 +112,7 @@ class PyAmp(QMainWindow):
 
         # --- ÜST BAŞLIK ---
         header_layout = QHBoxLayout()
-        title_label = QLabel("PYAMP PRO")
+        title_label = QLabel("PYAMP Music Player")
         title_label.setStyleSheet("color: #0f0; font-weight: bold; font-size: 10px;")
         btn_about = QPushButton("INFO ℹ")
         btn_about.setFixedSize(50, 20)

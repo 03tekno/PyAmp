@@ -1,7 +1,7 @@
 [Desktop Entry]
 Name=PyAmp
 Comment=Müzik Çalar
-Exec=python3 /opt/PyAmp/pyamp.py
+Exec=python3 /opt/pyamp/pyamp.py
 Icon=/opt/PyAmp/pyamp.png
 Terminal=false
 Type=Application

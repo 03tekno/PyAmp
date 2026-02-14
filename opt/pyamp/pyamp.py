@@ -1,14 +1,12 @@
 import sys, os, random, json
 from PyQt6.QtWidgets import (QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, 
                              QPushButton, QLabel, QFileDialog, QListWidget, QSlider, 
-                             QFrame, QMessageBox, QMenu)
+                             QFrame, QMessageBox, QMenu, QLineEdit)
 from PyQt6.QtMultimedia import QMediaPlayer, QAudioOutput
 from PyQt6.QtCore import Qt, QUrl, QTimer, QTime
 from PyQt6.QtGui import QPainter, QColor, QPen, QAction, QFont
 
 SETTINGS_FILE = os.path.expanduser("~/.pyamp_settings.json")
-
-# Desteklenen genişletilmiş format listesi
 SUPPORTED_FORMATS = ('.mp3', '.wav', '.ogg', '.flac', '.m4a', '.aac', '.wma', '.mp4', '.opus', '.aiff')
 
 class EnhancedList(QListWidget):
@@ -55,6 +53,7 @@ class VisualizerWidget(QWidget):
 class PyAmp(QMainWindow):
     def __init__(self):
         super().__init__(); self.setWindowTitle("PyAmp")
+        self.setMinimumSize(400, 600)
         self.resize(450, 750)
         self.player = QMediaPlayer(); self.audio_output = QAudioOutput(); self.player.setAudioOutput(self.audio_output)
         self.audio_output.setVolume(0.7)
@@ -71,8 +70,8 @@ class PyAmp(QMainWindow):
         widget = QWidget(); self.setCentralWidget(widget); layout = QVBoxLayout(widget)
         layout.setContentsMargins(20, 20, 20, 20); layout.setSpacing(15)
 
+        # Başlık Çubuğu
         h_lay = QHBoxLayout()
-        h_lay.addSpacing(30) 
         h_lay.addStretch() 
         self.title_lbl = QLabel("PyAmp Music Player")
         self.title_lbl.setStyleSheet("font-size: 18px; font-weight: bold; color: white;")
@@ -82,6 +81,7 @@ class PyAmp(QMainWindow):
         btn_ab.setFixedSize(30, 30); btn_ab.setCursor(Qt.CursorShape.PointingHandCursor); btn_ab.clicked.connect(self.show_about)
         h_lay.addWidget(btn_ab); layout.addLayout(h_lay)
         
+        # Ekran ve Ses Paneli
         main_screen_lay = QHBoxLayout()
         scr_f = QFrame(); scr_f.setObjectName("screen_container"); scr_f.setFixedHeight(120); scr_lay = QVBoxLayout(scr_f)
         self.info_screen = QLabel("Müzik Çalar Hazır"); self.info_screen.setObjectName("screen"); self.info_screen.setWordWrap(True)
@@ -90,43 +90,28 @@ class PyAmp(QMainWindow):
         
         vol_lay = QVBoxLayout()
         vol_lay.setSpacing(2)
-        
-        self.vol_perc_lbl = QLabel("70%")
-        self.vol_perc_lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.vol_perc_lbl.setObjectName("vol_label")
-        self.vol_perc_lbl.setFixedWidth(40)
-        
+        self.vol_perc_lbl = QLabel("70%"); self.vol_perc_lbl.setAlignment(Qt.AlignmentFlag.AlignCenter); self.vol_perc_lbl.setObjectName("vol_label"); self.vol_perc_lbl.setFixedWidth(40)
         self.volume_slider = QSlider(Qt.Orientation.Vertical)
-        self.volume_slider.setRange(0, 100); self.volume_slider.setValue(70); 
-        self.volume_slider.setFixedWidth(30)
-        self.volume_slider.setFixedHeight(90)
+        self.volume_slider.setRange(0, 100); self.volume_slider.setValue(70); self.volume_slider.setFixedWidth(30); self.volume_slider.setFixedHeight(90)
         self.volume_slider.valueChanged.connect(self.set_volume)
-        
-        vol_lay.addStretch()
-        vol_lay.addWidget(self.vol_perc_lbl, alignment=Qt.AlignmentFlag.AlignHCenter)
-        vol_lay.addWidget(self.volume_slider, alignment=Qt.AlignmentFlag.AlignHCenter)
-        vol_lay.addStretch()
+        vol_lay.addStretch(); vol_lay.addWidget(self.vol_perc_lbl, alignment=Qt.AlignmentFlag.AlignHCenter); vol_lay.addWidget(self.volume_slider, alignment=Qt.AlignmentFlag.AlignHCenter); vol_lay.addStretch()
         
         main_screen_lay.addWidget(scr_f, stretch=5); main_screen_lay.addLayout(vol_lay, stretch=1); layout.addLayout(main_screen_lay)
         
+        # Görselleştirici ve Progress
         self.visualizer = VisualizerWidget(); layout.addWidget(self.visualizer)
         self.prog_slider = QSlider(Qt.Orientation.Horizontal); self.prog_slider.sliderMoved.connect(lambda p: self.player.setPosition(p)); layout.addWidget(self.prog_slider)
         
+        # Ana Kontroller
         b_lay = QHBoxLayout(); b_lay.setSpacing(10)
-        # Buton ikonlarını ve bağlı oldukları fonksiyonları güncelledik
         btns = [("⏮", self.prev_m), ("▶", self.play_m), ("⏸", self.pause_m), ("⏹", self.stop_m), ("⏭", self.next_m)]
         for t, f in btns: 
-            b = QPushButton(t)
-            b.setObjectName("control_btn") # Özel stil için objectName ekledik
-            b.setFixedHeight(60) # Butonları biraz daha büyüttük
-            b.setCursor(Qt.CursorShape.PointingHandCursor)
-            b.clicked.connect(f)
+            b = QPushButton(t); b.setObjectName("control_btn"); b.setFixedHeight(60); b.setCursor(Qt.CursorShape.PointingHandCursor); b.clicked.connect(f)
             b_lay.addWidget(b)
         layout.addLayout(b_lay)
 
-        u_lay = QHBoxLayout()
-        u_lay.setSpacing(5)
-        
+        # Alt Araç Çubuğu
+        u_lay = QHBoxLayout(); u_lay.setSpacing(5)
         self.btn_shuffle = QPushButton("Karıştır"); self.btn_shuffle.clicked.connect(self.toggle_shuffle)
         self.btn_repeat = QPushButton("Tekrarla"); self.btn_repeat.clicked.connect(self.toggle_repeat)
         self.btn_list = QPushButton("Liste ☰"); self.btn_list.clicked.connect(self.toggle_playlist)
@@ -134,14 +119,20 @@ class PyAmp(QMainWindow):
         btn_add = QPushButton("Ekle +"); btn_add.clicked.connect(self.open_f)
         
         for b in [self.btn_shuffle, self.btn_repeat, self.btn_list, self.btn_theme, btn_add]:
-            b.setFixedHeight(38)
-            b.setCursor(Qt.CursorShape.PointingHandCursor)
-            u_lay.addWidget(b)
-            
+            b.setFixedHeight(38); b.setCursor(Qt.CursorShape.PointingHandCursor); u_lay.addWidget(b)
         layout.addLayout(u_lay)
 
+        # Arama Çubuğu
+        self.search_bar = QLineEdit()
+        self.search_bar.setPlaceholderText("Listede ara...")
+        self.search_bar.setObjectName("search_bar")
+        self.search_bar.textChanged.connect(self.filter_playlist)
+        layout.addWidget(self.search_bar)
+
+        # Liste (Sadece bunun uzaması için 'stretch=1' ekledik)
         self.list = EnhancedList(self); self.list.setObjectName("playlist")
-        self.list.doubleClicked.connect(self.play_sel); layout.addWidget(self.list)
+        self.list.doubleClicked.connect(self.play_sel)
+        layout.addWidget(self.list, stretch=1)
 
     def apply_styles(self, color):
         self.current_theme_hex = color
@@ -154,25 +145,18 @@ class PyAmp(QMainWindow):
             QLabel#time_display {{ color: {color}; font-size: 12px; font-family: 'Consolas'; }}
             QLabel#vol_label {{ color: {color}; font-size: 12px; font-weight: bold; }}
             
-            /* Genel Buton Stili */
             QPushButton {{ background-color: #252529; color: white; border: none; border-radius: 10px; padding: 5px; font-size: 11px; }}
             QPushButton:hover {{ background-color: #323238; color: {color}; }}
             
-            /* Kontrol Butonları (Oynat, Durdur, İleri vb.) */
-            QPushButton#control_btn {{ 
-                font-size: 24px; 
-                color: {color}; 
-                background-color: #1E1E22; 
-                border: 1px solid #2A2A2E;
+            QPushButton#control_btn {{ font-size: 24px; color: {color}; background-color: #1E1E22; border: 1px solid #2A2A2E; }}
+            QPushButton#control_btn:hover {{ background-color: #2A2A2E; border: 1px solid {color}; }}
+            QPushButton#control_btn:pressed {{ background-color: {color}; color: #121214; }}
+
+            #search_bar {{ 
+                background-color: #1E1E22; color: white; border: 1px solid #2A2A2E; 
+                border-radius: 8px; padding: 8px; font-size: 12px; margin-bottom: 2px;
             }}
-            QPushButton#control_btn:hover {{ 
-                background-color: #2A2A2E; 
-                border: 1px solid {color}; 
-            }}
-            QPushButton#control_btn:pressed {{
-                background-color: {color};
-                color: #121214;
-            }}
+            #search_bar:focus {{ border: 1px solid {color}; }}
 
             #playlist {{ background-color: #18181B; color: {color}; border-radius: 12px; border: none; padding: 5px; outline: none; font-size: 13px; }}
             #playlist::item {{ padding: 12px; border-radius: 8px; margin: 2px; background-color: transparent; }}
@@ -184,6 +168,11 @@ class PyAmp(QMainWindow):
             QSlider::groove:vertical {{ background: #252529; width: 6px; border-radius: 3px; }}
             QSlider::handle:vertical {{ background: {color}; height: 14px; width: 14px; margin: 0 -4px; border-radius: 7px; }}
         """)
+
+    def filter_playlist(self, text):
+        for i in range(self.list.count()):
+            item = self.list.item(i)
+            item.setHidden(text.lower() not in item.text().lower())
 
     def show_theme_menu(self):
         menu = QMenu(self)
@@ -215,7 +204,10 @@ class PyAmp(QMainWindow):
         rows = sorted([self.list.row(i) for i in sel], reverse=True)
         for r in rows: self.list.takeItem(r); del self.playlist_files[r]
     def show_about(self): QMessageBox.information(self, "Hakkında", "Mobilturka-2026")
-    def toggle_playlist(self): self.list.setVisible(not self.list.isVisible())
+    def toggle_playlist(self): 
+        visible = not self.list.isVisible()
+        self.list.setVisible(visible)
+        self.search_bar.setVisible(visible)
     def save_settings(self):
         try:
             data = {"playlist": self.playlist_files, "theme": self.current_theme_hex, "vol": self.volume_slider.value()}

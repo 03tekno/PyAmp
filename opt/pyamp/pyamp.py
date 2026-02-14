@@ -118,17 +118,22 @@ class PyAmp(QMainWindow):
             b = QPushButton(t); b.setFixedHeight(55); b.setCursor(Qt.CursorShape.PointingHandCursor); b.clicked.connect(f); b_lay.addWidget(b)
         layout.addLayout(b_lay)
 
-        m_lay = QHBoxLayout()
+        # Yeni Birleşik Alt Menü Satırı
+        u_lay = QHBoxLayout()
+        u_lay.setSpacing(5)
+        
         self.btn_shuffle = QPushButton("Karıştır"); self.btn_shuffle.clicked.connect(self.toggle_shuffle)
         self.btn_repeat = QPushButton("Tekrarla"); self.btn_repeat.clicked.connect(self.toggle_repeat)
-        for b in [self.btn_shuffle, self.btn_repeat]: b.setFixedHeight(35); m_lay.addWidget(b)
-        layout.addLayout(m_lay)
-
-        u_lay = QHBoxLayout()
         self.btn_list = QPushButton("Liste ☰"); self.btn_list.clicked.connect(self.toggle_playlist)
         self.btn_theme = QPushButton("Tema 🎨"); self.btn_theme.clicked.connect(self.show_theme_menu)
         btn_add = QPushButton("Ekle +"); btn_add.clicked.connect(self.open_f)
-        for b in [self.btn_list, self.btn_theme, btn_add]: b.setFixedHeight(40); u_lay.addWidget(b)
+        
+        # Tüm butonları tek satıra ekliyoruz
+        for b in [self.btn_shuffle, self.btn_repeat, self.btn_list, self.btn_theme, btn_add]:
+            b.setFixedHeight(38) # Biraz daha kompakt olması için yüksekliği hafifçe daralttım
+            b.setCursor(Qt.CursorShape.PointingHandCursor)
+            u_lay.addWidget(b)
+            
         layout.addLayout(u_lay)
 
         self.list = EnhancedList(self); self.list.setObjectName("playlist")
@@ -144,7 +149,7 @@ class PyAmp(QMainWindow):
             QLabel#screen {{ color: white; font-size: 14px; font-weight: 500; }}
             QLabel#time_display {{ color: {color}; font-size: 12px; font-family: 'Consolas'; }}
             QLabel#vol_label {{ color: {color}; font-size: 12px; font-weight: bold; }}
-            QPushButton {{ background-color: #252529; color: white; border: none; border-radius: 10px; padding: 5px; }}
+            QPushButton {{ background-color: #252529; color: white; border: none; border-radius: 10px; padding: 5px; font-size: 11px; }}
             QPushButton:hover {{ background-color: #323238; border: 1px solid {color}; }}
             #playlist {{ background-color: #18181B; color: {color}; border-radius: 12px; border: none; padding: 5px; outline: none; font-size: 13px; }}
             #playlist::item {{ padding: 12px; border-radius: 8px; margin: 2px; background-color: transparent; }}
@@ -167,8 +172,8 @@ class PyAmp(QMainWindow):
         self.audio_output.setVolume(value / 100)
         self.vol_perc_lbl.setText(f"{value}%")
         
-    def toggle_shuffle(self): self.is_shuffle = not self.is_shuffle; self.btn_shuffle.setStyleSheet(f"color: {self.current_theme_hex if self.is_shuffle else 'white'};")
-    def toggle_repeat(self): self.is_repeat = not self.is_repeat; self.btn_repeat.setStyleSheet(f"color: {self.current_theme_hex if self.is_repeat else 'white'};")
+    def toggle_shuffle(self): self.is_shuffle = not self.is_shuffle; self.btn_shuffle.setStyleSheet(f"color: {self.current_theme_hex if self.is_shuffle else 'white'}; font-weight: {'bold' if self.is_shuffle else 'normal'};")
+    def toggle_repeat(self): self.is_repeat = not self.is_repeat; self.btn_repeat.setStyleSheet(f"color: {self.current_theme_hex if self.is_repeat else 'white'}; font-weight: {'bold' if self.is_repeat else 'normal'};")
     
     def status_manager(self, s):
         if s == QMediaPlayer.MediaStatus.EndOfMedia:
@@ -206,7 +211,6 @@ class PyAmp(QMainWindow):
         if p not in self.playlist_files: self.playlist_files.append(p); self.list.addItem(os.path.basename(p))
     
     def open_f(self):
-        # Filtreleme kısmına m4a, aac ve diğerleri eklendi
         filter_str = "Ses Dosyaları (" + " ".join(["*" + ext for ext in SUPPORTED_FORMATS]) + ");;Tüm Dosyalar (*)"
         f, _ = QFileDialog.getOpenFileNames(self, "Müzik Seç", "", filter_str)
         for p in f: self.add_file_to_list(p)

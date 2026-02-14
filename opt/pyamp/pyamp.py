@@ -113,12 +113,17 @@ class PyAmp(QMainWindow):
         self.prog_slider = QSlider(Qt.Orientation.Horizontal); self.prog_slider.sliderMoved.connect(lambda p: self.player.setPosition(p)); layout.addWidget(self.prog_slider)
         
         b_lay = QHBoxLayout(); b_lay.setSpacing(10)
+        # Buton ikonlarını ve bağlı oldukları fonksiyonları güncelledik
         btns = [("⏮", self.prev_m), ("▶", self.play_m), ("⏸", self.pause_m), ("⏹", self.stop_m), ("⏭", self.next_m)]
         for t, f in btns: 
-            b = QPushButton(t); b.setFixedHeight(55); b.setCursor(Qt.CursorShape.PointingHandCursor); b.clicked.connect(f); b_lay.addWidget(b)
+            b = QPushButton(t)
+            b.setObjectName("control_btn") # Özel stil için objectName ekledik
+            b.setFixedHeight(60) # Butonları biraz daha büyüttük
+            b.setCursor(Qt.CursorShape.PointingHandCursor)
+            b.clicked.connect(f)
+            b_lay.addWidget(b)
         layout.addLayout(b_lay)
 
-        # Yeni Birleşik Alt Menü Satırı
         u_lay = QHBoxLayout()
         u_lay.setSpacing(5)
         
@@ -128,9 +133,8 @@ class PyAmp(QMainWindow):
         self.btn_theme = QPushButton("Tema 🎨"); self.btn_theme.clicked.connect(self.show_theme_menu)
         btn_add = QPushButton("Ekle +"); btn_add.clicked.connect(self.open_f)
         
-        # Tüm butonları tek satıra ekliyoruz
         for b in [self.btn_shuffle, self.btn_repeat, self.btn_list, self.btn_theme, btn_add]:
-            b.setFixedHeight(38) # Biraz daha kompakt olması için yüksekliği hafifçe daralttım
+            b.setFixedHeight(38)
             b.setCursor(Qt.CursorShape.PointingHandCursor)
             u_lay.addWidget(b)
             
@@ -149,12 +153,32 @@ class PyAmp(QMainWindow):
             QLabel#screen {{ color: white; font-size: 14px; font-weight: 500; }}
             QLabel#time_display {{ color: {color}; font-size: 12px; font-family: 'Consolas'; }}
             QLabel#vol_label {{ color: {color}; font-size: 12px; font-weight: bold; }}
+            
+            /* Genel Buton Stili */
             QPushButton {{ background-color: #252529; color: white; border: none; border-radius: 10px; padding: 5px; font-size: 11px; }}
-            QPushButton:hover {{ background-color: #323238; border: 1px solid {color}; }}
+            QPushButton:hover {{ background-color: #323238; color: {color}; }}
+            
+            /* Kontrol Butonları (Oynat, Durdur, İleri vb.) */
+            QPushButton#control_btn {{ 
+                font-size: 24px; 
+                color: {color}; 
+                background-color: #1E1E22; 
+                border: 1px solid #2A2A2E;
+            }}
+            QPushButton#control_btn:hover {{ 
+                background-color: #2A2A2E; 
+                border: 1px solid {color}; 
+            }}
+            QPushButton#control_btn:pressed {{
+                background-color: {color};
+                color: #121214;
+            }}
+
             #playlist {{ background-color: #18181B; color: {color}; border-radius: 12px; border: none; padding: 5px; outline: none; font-size: 13px; }}
             #playlist::item {{ padding: 12px; border-radius: 8px; margin: 2px; background-color: transparent; }}
             #playlist::item:selected {{ background-color: transparent; color: {color}; font-weight: bold; border-left: 4px solid {color}; }}
             #playlist::item:hover {{ background-color: #252529; }}
+            
             QSlider::groove:horizontal {{ background: #252529; height: 6px; border-radius: 3px; }}
             QSlider::handle:horizontal {{ background: {color}; width: 14px; height: 14px; margin: -4px 0; border-radius: 7px; }}
             QSlider::groove:vertical {{ background: #252529; width: 6px; border-radius: 3px; }}

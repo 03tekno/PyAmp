@@ -16,14 +16,20 @@ class EnhancedList(QListWidget):
         self.setSelectionMode(QListWidget.SelectionMode.ExtendedSelection)
         self.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
         self.customContextMenuRequested.connect(self.show_context_menu)
+        
+        # Alt (yatay) kaydırma çubuğunu tamamen kapatır
+        self.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+
     def keyPressEvent(self, event):
         if event.key() == Qt.Key.Key_Delete: self.window().remove_selected_item()
         elif event.modifiers() == Qt.ControlModifier and event.key() == Qt.Key.Key_A: self.selectAll()
         else: super().keyPressEvent(event)
+
     def show_context_menu(self, position):
         menu = QMenu(); sa = QAction("Tümünü Seç", self); sa.triggered.connect(self.selectAll)
         rs = QAction("Seçilenleri Sil", self); rs.triggered.connect(self.window().remove_selected_item)
         menu.addAction(sa); menu.addSeparator(); menu.addAction(rs); menu.exec(self.mapToGlobal(position))
+
     def dragEnterEvent(self, event): (event.accept() if event.mimeData().hasUrls() else event.ignore())
     def dragMoveEvent(self, event): (event.accept() if event.mimeData().hasUrls() else event.ignore())
     def dropEvent(self, event):
@@ -33,7 +39,7 @@ class EnhancedList(QListWidget):
 
 class VisualizerWidget(QWidget):
     def __init__(self, parent=None):
-        super().__init__(parent); self.setFixedHeight(80); self.bar_heights = [2] * 30
+        super().__init__(parent); self.setFixedHeight(80); self.bar_heights = [2] * 40
         self.animation_timer = QTimer(self); self.animation_timer.timeout.connect(self.update_bars)
         self.is_playing = False; self.current_color = QColor("#00FF88")
     def start_animation(self): self.is_playing = True; self.animation_timer.start(50)
@@ -70,7 +76,6 @@ class PyAmp(QMainWindow):
         widget = QWidget(); self.setCentralWidget(widget); layout = QVBoxLayout(widget)
         layout.setContentsMargins(20, 20, 20, 20); layout.setSpacing(15)
 
-        # Başlık Çubuğu
         h_lay = QHBoxLayout()
         h_lay.addStretch() 
         self.title_lbl = QLabel("PyAmp Music Player")
@@ -81,7 +86,6 @@ class PyAmp(QMainWindow):
         btn_ab.setFixedSize(30, 30); btn_ab.setCursor(Qt.CursorShape.PointingHandCursor); btn_ab.clicked.connect(self.show_about)
         h_lay.addWidget(btn_ab); layout.addLayout(h_lay)
         
-        # Ekran ve Ses Paneli
         main_screen_lay = QHBoxLayout()
         scr_f = QFrame(); scr_f.setObjectName("screen_container"); scr_f.setFixedHeight(120); scr_lay = QVBoxLayout(scr_f)
         self.info_screen = QLabel("Müzik Çalar Hazır"); self.info_screen.setObjectName("screen"); self.info_screen.setWordWrap(True)
@@ -98,11 +102,9 @@ class PyAmp(QMainWindow):
         
         main_screen_lay.addWidget(scr_f, stretch=5); main_screen_lay.addLayout(vol_lay, stretch=1); layout.addLayout(main_screen_lay)
         
-        # Görselleştirici ve Progress
         self.visualizer = VisualizerWidget(); layout.addWidget(self.visualizer)
         self.prog_slider = QSlider(Qt.Orientation.Horizontal); self.prog_slider.sliderMoved.connect(lambda p: self.player.setPosition(p)); layout.addWidget(self.prog_slider)
         
-        # Ana Kontroller
         b_lay = QHBoxLayout(); b_lay.setSpacing(10)
         btns = [("⏮", self.prev_m), ("▶", self.play_m), ("⏸", self.pause_m), ("⏹", self.stop_m), ("⏭", self.next_m)]
         for t, f in btns: 
@@ -110,7 +112,6 @@ class PyAmp(QMainWindow):
             b_lay.addWidget(b)
         layout.addLayout(b_lay)
 
-        # Alt Araç Çubuğu
         u_lay = QHBoxLayout(); u_lay.setSpacing(5)
         self.btn_shuffle = QPushButton("Karıştır"); self.btn_shuffle.clicked.connect(self.toggle_shuffle)
         self.btn_repeat = QPushButton("Tekrarla"); self.btn_repeat.clicked.connect(self.toggle_repeat)
@@ -122,14 +123,12 @@ class PyAmp(QMainWindow):
             b.setFixedHeight(38); b.setCursor(Qt.CursorShape.PointingHandCursor); u_lay.addWidget(b)
         layout.addLayout(u_lay)
 
-        # Arama Çubuğu
         self.search_bar = QLineEdit()
         self.search_bar.setPlaceholderText("Listede ara...")
         self.search_bar.setObjectName("search_bar")
         self.search_bar.textChanged.connect(self.filter_playlist)
         layout.addWidget(self.search_bar)
 
-        # Liste (Sadece bunun uzaması için 'stretch=1' ekledik)
         self.list = EnhancedList(self); self.list.setObjectName("playlist")
         self.list.doubleClicked.connect(self.play_sel)
         layout.addWidget(self.list, stretch=1)

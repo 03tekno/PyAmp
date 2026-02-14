@@ -66,7 +66,7 @@ class PyAmp(QMainWindow):
         self.player.positionChanged.connect(self.update_slider)
         self.player.durationChanged.connect(self.update_duration); self.player.mediaStatusChanged.connect(self.status_manager)
         self.playlist_files = []; self.total_time_ms = 0; self.is_shuffle = False; self.is_repeat = False
-        self.current_theme_hex = "#FF8AAE" 
+        self.current_theme_hex = "#00FF88" # Başlangıç varsayılanı: Modern Turkuaz
         
         self.init_ui()
         self.load_settings()

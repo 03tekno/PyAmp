@@ -162,6 +162,34 @@ class PyAmp(QMainWindow):
             #playlist::item:selected {{ background-color: transparent; color: {color}; font-weight: bold; border-left: 4px solid {color}; }}
             #playlist::item:hover {{ background-color: #252529; }}
             
+            /* Modern Kaydırma Çubuğu (Scrollbar) Tasarımı */
+            QScrollBar:vertical {{
+                border: none;
+                background: #18181B;
+                width: 8px;
+                margin: 0px 0px 0px 0px;
+                border-radius: 4px;
+            }}
+            QScrollBar::handle:vertical {{
+                background: {color};
+                min-height: 30px;
+                border-radius: 4px;
+            }}
+            QScrollBar::handle:vertical:hover {{
+                background: {color};
+            }}
+            QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {{
+                border: none;
+                background: none;
+                height: 0px;
+            }}
+            QScrollBar::up-arrow:vertical, QScrollBar::down-arrow:vertical {{
+                background: none;
+            }}
+            QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical {{
+                background: none;
+            }}
+            
             QSlider::groove:horizontal {{ background: #252529; height: 6px; border-radius: 3px; }}
             QSlider::handle:horizontal {{ background: {color}; width: 14px; height: 14px; margin: -4px 0; border-radius: 7px; }}
             QSlider::groove:vertical {{ background: #252529; width: 6px; border-radius: 3px; }}
